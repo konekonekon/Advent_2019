@@ -26,7 +26,7 @@ int vector_resize(vector * v, size_t new_capacity) {
 	return 0;
 }
 
-void read_file(vector * input){
+int read_file(vector * input){
 	FILE *fp = fopen("input", "r");
 	char *line_buf = NULL;
 	size_t line_buf_size = 0;
@@ -40,10 +40,8 @@ void read_file(vector * input){
 		char * token = strtok(line_buf, ",");
 
 		while(token != NULL){
-			printf("Size: %lu\n", input->size);
-
+			//fprintf(stderr, "Size: %lu\n", input->size);
 			input->data[input->size] = atoi(token);
-			//printf("content: %s\n", token);
 			
 			//read next item
 			//NULL means the place we stopped before
@@ -51,16 +49,18 @@ void read_file(vector * input){
 			
 			input->size++;
 			if (input->size == input->capacity) {
-				vector_resize(input, 200);
-				printf("New capacity: %lu\n", input->capacity);
+				int res = vector_resize(input, 200);
+				if (res == -1) return -1; 
+				fprintf(stderr, "New capacity: %lu\n", input->capacity);
 			}
 		}
-		printf("*Line length: %lu\n", input->size);
+		fprintf(stderr, "* Line length: %lu\n", input->size);
 		line_size = getline(&line_buf, &line_buf_size, fp);
 	}	
 	free(line_buf);
 	line_buf = NULL;
 	fclose(fp);
+	return 0;
 }
 
 void calculate(vector * input){
@@ -68,7 +68,7 @@ void calculate(vector * input){
 	while(index < input->size){
 		int result;	
 		int operator = input->data[index];
-		printf("Operator: %d\n", operator);
+		fprintf(stderr, "Operator: %d\n", operator);
 		int l_oper_index = input->data[index+1];
 		int r_oper_index = input->data[index+2];
 		int output_index = input->data[index+3];
@@ -77,60 +77,63 @@ void calculate(vector * input){
 		int r_number = input->data[r_oper_index];
 		if(operator==1){
 			result = l_number + r_number;
-			printf("%d + %d = %d\n", l_number, r_number, result);
+			fprintf(stderr, "%d + %d = %d\n", l_number, r_number, result);
 		} else if(operator==2){
 			result = l_number * r_number;
-			printf("%d * %d = %d\n", l_number, r_number, result);
+			fprintf(stderr, "%d * %d = %d\n", l_number, r_number, result);
 		} else if(operator==99){
-			printf("Finish!\n");
+			fprintf(stderr, "Finish!\n");
 			break;
 		} else{
-			printf("Something wrong...\n");
+			fprintf(stderr, "Something wrong...\n");
 			break;
 		}
 		input->data[output_index] = result;
 		index += 4;
 	
-		//printf("New array: ");
+		//fprintf(stderr, "New array: ");
 		//for (int i=0; i<input->size; i++){
-		//	printf("%d,", input->data[i]);
+		//	fprintf(stderr, "%d,", input->data[i]);
 		//	if((i+1)%4==0){
-		//		printf(" / ");
+		//		fprintf(stderr, " / ");
 		//	}
 		//}
-		//printf("\n\n");
+		//fprintf(stderr, "\n\n");
 	}		
 }
 
 int main(){	
 	int max_size = 100;
 
-	//if (inputs.data == NULL) {
-        //	printf("Memory not allocated.\n");
-        //	exit(0);
-    	//} 
-
 	vector input;
-	vector_init(&input, max_size);
-	printf("Size: %lu\n", input.size);
-	printf("Capacity: %lu\n", input.capacity);
+	int res = vector_init(&input, max_size);	
+	if (res == -1) {
+        	fprintf(stderr, "Memory not allocated.\n");
+        	return 1;
+    	}
+	fprintf(stderr, "Size: %lu\n", input.size);
+	fprintf(stderr, "Capacity: %lu\n\n", input.capacity);
 
-	read_file(&input);
-
-	printf("Array: ");
+	res = read_file(&input);
+	if (res == -1) {
+		fprintf(stderr, "Reallocation error");
+		return 1;
+	}
+	fprintf(stderr, "Array: ");
 	for (int i=0; i<input.size; i++){
-		printf("%d,", input.data[i]);
-		if((i+1)%4==0){
-			printf(" / ");
+		fprintf(stderr, "%d,", input.data[i]);
+		if ((i+1)%4==0){
+			fprintf(stderr, " / ");
+		} else if (i == input.size -1) {
+			fprintf(stderr, "\n\n");
 		}
 	}
-	printf("\n\n");	
 	calculate(&input);
 
-	printf("Result: ");
+	fprintf(stderr, "Result: ");
 	for (int i=0; i<input.size; i++){
-		printf("%d,", input.data[i]);
+		fprintf(stderr, "%d,", input.data[i]);
 	}
-	printf("\n");
-	return EXIT_SUCCESS;
+	fprintf(stderr, "\n");
+	return EXIT_SUCCESS; //=0
 }
