@@ -1,2 +1,2 @@
-CFLAGS = -Wall -g
-day2_1: day2_1.c
+CXXFLAGS = -Wall -g
+day2_1: day2_1.cpp
