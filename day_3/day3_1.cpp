@@ -6,7 +6,7 @@
 #include <regex>
 
 
-int read_two_lines(std::vector<std::string> &input, std::vector<std::string> &input2) {
+int read_two_lines(std::vector<std::string> &input) {
 	std::string token;
 	std::string line;
 	std::ifstream ReadFile("ss_input");
@@ -44,13 +44,13 @@ int get_distance(std::tuple<int,int> &old_p, std::tuple<int,int> &new_p) {
 	return (x2 - x1) + (y2 - y1);
 }
 
-int read_paths(std::vector<std::string> &input) {
-	std::vector<std::tuple<int,int>> first_path = {};
-	std::vector<std::tuple<int,int>> second_path = {};
+int read_paths(std::vector<std::string> &input, std::vector<std::tuple<int,int>> &first_path, std::vector<std::tuple<int,int>> &second_path) {
 	std::vector<std::tuple<int,int>> current_path = {};
 	std::tuple<int,int> current_position = {0,0};
-	std::tuple<int,int> old_position = {0,0};
 	bool is_next_second = false;
+	std::smatch sm;
+	std::string direction;
+	int step;
 	
 	for (int i=0; (size_t)i<input.size(); i++) {
 		int x;
@@ -60,31 +60,25 @@ int read_paths(std::vector<std::string> &input) {
 		std::cout << "Selected: " << input[i] << "\n";
 
 		if (input[i] == ",") {
-			//// Store path
-			//if (is_next_second) {
-			//	second_path = current_path;
-			//} else {
-			//	first_path = current_path;
-			//}
+			// Store path
+			if (is_next_second) {
+				second_path = current_path;
+			} else {
+				first_path = current_path;
+			}
 
-			//// Reset
-			//std::get<0>(current_position) = 0;
-			//std::get<1>(current_position) = 0;
-			//current_path = {};
-			//is_next_second = true;
-			//continue;
-
-			first_path = current_path;	
-			break;
+			// Reset
+			std::get<0>(current_position) = 0;
+			std::get<1>(current_position) = 0;
+			current_path = {};
+			is_next_second = true;
+			continue;
 		}
 
 		// Get the new position
-		std::smatch sm;
 		std::regex_match (input[i], sm, std::regex("(\\w)(\\d+)"));
-		std::string direction = sm[1];
-		int step = std::stoi(sm[2]);
-		std::cout << "Direction: " << direction << "\n";
-		std::cout << "Step: " << step << "\n";
+		direction = sm[1];
+		step = std::stoi(sm[2]);
 		
 		if (direction=="R") {
 			for (int s=x+1; s<=x+step; s++) {
@@ -126,27 +120,28 @@ int read_paths(std::vector<std::string> &input) {
 		
 	}
 	
-	std::cout << "First wire path:\n";
-	int res_x;
-	int res_y;
-	for (int i=0; (size_t)i<first_path.size(); i++) {
-		std::tie (res_x, res_y) = first_path[i];
-	        std::cout << res_x << "," << res_y << " / ";
-	        if ((size_t)i == first_path.size()-1) {
-	                std::cout << "\n";
-	        }                 
-	}                         
+	//std::cout << "First wire path:\n";
+	//int res_x;
+	//int res_y;
+	//for (int i=0; (size_t)i<first_path.size(); i++) {
+	//	std::tie (res_x, res_y) = first_path[i];
+	//        std::cout << res_x << "," << res_y << " / ";
+	//        if ((size_t)i == first_path.size()-1) {
+	//                std::cout << "\n";
+	//        }                 
+	//}                         
 
 	return 0;
 }
 
 
 int main() {
-	std::vector<std::string> input = {};
-	std::vector<std::string> input2 = {};
+	std::vector<std::string> input = {};	
+	std::vector<std::tuple<int,int>> first_path = {};
+	std::vector<std::tuple<int,int>> second_path = {};
 
 	// Read file and store data into a vector
-	int res = read_two_lines(input, input2);
+	int res = read_two_lines(input);
 	if (res != 0) {
 		std::cout << "Reallocation error";
 		return 1;
@@ -160,16 +155,18 @@ int main() {
 	                std::cout << "\n";
 	        }
 	}
-	//std::cout << "Input 2: \n";
-	//for (int i=0; (size_t)i<input2.size(); i++) {
-	//        std::cout << input2[i] << ',';
-	//        if ((size_t)i == input2.size()-1) {
-	//                std::cout << "\n";
-	//        }
-	//}
 
 	std::cout << "\n";
-	read_paths(input);
+	res = read_paths(input, first_path, second_path);
+	if (res != 0) {
+		std::cout << "Paths reading error";
+		return 1;
+	}
+
+	// find the intersections
+	// calculate the manhattan distance
+	// get the lowest intersection
+
 	
 	return 0;
 }
