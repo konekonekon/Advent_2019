@@ -4,12 +4,15 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
-
+#include <cstdlib>
+#include <limits>
+#include <bits/stdc++.h>
+ 
 
 int read_two_lines(std::vector<std::string> &input) {
 	std::string token;
 	std::string line;
-	std::ifstream ReadFile("ss_input");
+	std::ifstream ReadFile("input");
 
 	while (getline(ReadFile, line)) {
 		//std::cout << "Line: " << line << "\n";
@@ -33,19 +36,8 @@ int read_two_lines(std::vector<std::string> &input) {
 	return 0;
 }
 
-// Function to calculate distance 
-int get_distance(std::tuple<int,int> &old_p, std::tuple<int,int> &new_p) { 	
-	int x1;
-	int y1;
-	int x2;
-	int y2;
-	std::tie (x1, y1) = old_p;
-	std::tie (x2, y2) = new_p;
-	return (x2 - x1) + (y2 - y1);
-}
-
-int read_paths(std::vector<std::string> &input, std::vector<std::tuple<int,int>> &first_path, std::vector<std::tuple<int,int>> &second_path) {
-	std::vector<std::tuple<int,int>> current_path = {};
+int read_paths(std::vector<std::string> &input, std::unordered_set<std::tuple<int,int>> &first_path, std::unordered_set<std::tuple<int,int>> &second_path) {
+	std::unordered_set<std::tuple<int,int>> current_path;
 	std::tuple<int,int> current_position = {0,0};
 	bool is_next_second = false;
 	std::smatch sm;
@@ -107,38 +99,48 @@ int read_paths(std::vector<std::string> &input, std::vector<std::tuple<int,int>>
 		}
 	
 		// Current wire path:
-		std::cout << "Current wire path:\n";
-		int res_x;
-		int res_y;
-		for (int i=0; (size_t)i<current_path.size(); i++) {
-			std::tie (res_x, res_y) = current_path[i];
-		        std::cout << res_x << "," << res_y << " / ";
-		        if ((size_t)i == current_path.size()-1) {
-		                std::cout << "\n";
-		        }                 
-		}                         
+		//std::cout << "Current wire path:\n";
+		//int res_x;
+		//int res_y;
+		//for (int i=0; (size_t)i<current_path.size(); i++) {
+		//	std::tie (res_x, res_y) = current_path[i];
+		//        std::cout << res_x << "," << res_y << " / ";
+		//        if ((size_t)i == current_path.size()-1) {
+		//                std::cout << "\n";
+		//        }                 
+		//}                         
 		
 	}
-	
-	//std::cout << "First wire path:\n";
-	//int res_x;
-	//int res_y;
-	//for (int i=0; (size_t)i<first_path.size(); i++) {
-	//	std::tie (res_x, res_y) = first_path[i];
-	//        std::cout << res_x << "," << res_y << " / ";
-	//        if ((size_t)i == first_path.size()-1) {
-	//                std::cout << "\n";
-	//        }                 
-	//}                         
-
 	return 0;
 }
 
+int find_intersections(std::unordered_set<std::tuple<int,int>> &first_path, std::unordered_set<std::tuple<int,int>> &second_path, std::unordered_set<std::tuple<int, int>> &intersections) {
+	int f_x;
+	int f_y;
+	int s_x;
+	int s_y;
+	std::cout << "Looking for intersections\n";
+	
+	for (int i=0; (size_t)i<first_path.size(); i++) {
+		std::tie (f_x, f_y) = first_path[i];
+		//std::cout << "First X: " << f_x << ", First Y: " << f_y << std::endl;
+		for (int j=0; (size_t)j<second_path.size(); j++) {
+			std::tie (s_x, s_y) = second_path[j];
+			//std::cout << "Second X: " << s_x << ", Second Y: " << s_y << "\n";
+			if (f_x == s_x && f_y == s_y) {
+				std::cout << "Bingo: " << f_x << ", " << f_y << "\n";
+				intersections.push_back(first_path[i]); 
+			}
+		}
+	}
+	return 0;
+}
 
 int main() {
 	std::vector<std::string> input = {};	
-	std::vector<std::tuple<int,int>> first_path = {};
-	std::vector<std::tuple<int,int>> second_path = {};
+	std::unordered_set<std::tuple<int,int>> first_path;
+	std::unordered_set<std::tuple<int,int>> second_path;	
+	std::unordered_set<std::tuple<int,int>> intersections;
 
 	// Read file and store data into a vector
 	int res = read_two_lines(input);
@@ -147,14 +149,14 @@ int main() {
 		return 1;
 	}
 
-	// Display read data
-	std::cout << "Input: \n";
-	for (int i=0; (size_t)i<input.size(); i++) {
-	        std::cout << input[i] << ',';
-	        if ((size_t)i == input.size()-1) {
-	                std::cout << "\n";
-	        }
-	}
+	//// Display read data
+	//std::cout << "Input: \n";
+	//for (int i=0; (size_t)i<input.size(); i++) {
+	//        std::cout << input[i] << ',';
+	//        if ((size_t)i == input.size()-1) {
+	//                std::cout << "\n";
+	//        }
+	//}
 
 	std::cout << "\n";
 	res = read_paths(input, first_path, second_path);
@@ -163,11 +165,50 @@ int main() {
 		return 1;
 	}
 
-	// find the intersections
-	// calculate the manhattan distance
-	// get the lowest intersection
+	//// Display only the first wire path
+	//std::cout << "First wire path:\n";
+	//int res_x;
+	//int res_y;
+	//for (int i=0; (size_t)i<first_path.size(); i++) {
+	//	std::tie (res_x, res_y) = first_path[i];
+	//        std::cout << res_x << "," << res_y << " / ";
+	//        if ((size_t)i == first_path.size()-1) {
+	//                std::cout << "\n";
+	//        }
+	//}
 
-	
+	// find the intersections
+	res = find_intersections(first_path, second_path, intersections);
+
+	std::cout << "\n";
+	if (res != 0) {
+		std::cout << "Intersection calculation error";
+		return 1;
+	}
+
+	// Display only the intersections
+	std::cout << "Intersections:\n";
+	int res_x;
+	int res_y;
+	for (int i=0; (size_t)i<intersections.size(); i++) {
+		std::tie (res_x, res_y) = intersections[i];
+	        std::cout << res_x << "," << res_y << " / ";
+	        if ((size_t)i == intersections.size()-1) {
+	                std::cout << "\n";
+	        }
+	}
+
+	// calculate the manhattan distance and get the lowest one
+	int distance = std::numeric_limits<int>::max();
+	int d;
+	for (int i=0; (size_t)i<intersections.size(); i++) {
+		std::tie (res_x, res_y) = intersections[i];
+		d = std::abs(res_x) + std::abs(res_y);	
+		if (distance > d) {
+			distance = d;
+		}
+	}
+	std::cout << "\nManathan distance: " << distance << std::endl;
 	return 0;
 }
 
